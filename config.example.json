@@ -3,5 +3,8 @@
     "fateadm_key": "",
     "neea_username": "",
     "neea_password": "",
-    "city_list": ["CHANGCHUN", "ZHENGZHOU", "BEIJING"]
+    "city_list": ["CHANGCHUN", "ZHENGZHOU", "BEIJING"],
+    "telegram_token": "",
+    "telegram_chat_id": -1,
+    "interval": 3600
 }

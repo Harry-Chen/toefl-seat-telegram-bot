@@ -112,3 +112,4 @@ dmypy.json
 geckodriver.log
 .vscode/
 config.json
+data/
