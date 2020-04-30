@@ -248,6 +248,7 @@ if __name__ == '__main__':
             bot.send_message(s, config['telegram_chat_id'])
 
         print(f'Next crawl time: {next_time_str}')
-        time.sleep(interval)
+        delta = next_time - datetime.now()
+        time.sleep(delta.seconds)
 
     driver.quit()
