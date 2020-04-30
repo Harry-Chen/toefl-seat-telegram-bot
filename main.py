@@ -44,6 +44,7 @@ def recognize_captcha(image_url):
 
 
 def fill_credentials():
+    print('Filling credentials...')
     input_name = wait.until(EC.presence_of_element_located((By.ID, 'userName')))
     input_name.clear()
     input_name.send_keys(config['neea_username'])
@@ -53,6 +54,7 @@ def fill_credentials():
 
 
 def get_captcha():
+    print('Getting captcha...')
     input_captcha = wait.until(EC.presence_of_element_located((By.ID, 'verifyCode')))
     input_captcha.click()
     captcha_img = wait.until((EC.presence_of_element_located((By.ID, "chkImg"))))
@@ -156,13 +158,16 @@ def crawl_toefl_info():
                 try:
                     query_button.click()
                     WebDriverWait(driver, 2, 0.1).until(EC.text_to_be_present_in_element((By.XPATH, '//div[@id="qrySeatResult"]/h4'), '考位查询结果'))
+                    # will fail for several times
                     break
                 except:
+                    # retry
                     print('Result not crawled')
                     pass
             items = driver.find_elements_by_xpath('//table[@class="table table-bordered table-striped"][1]/tbody/tr')
             process_items(items)
             try:
+                # sometimes there are two exams on one day
                 items = driver.find_elements_by_xpath('//table[@class="table table-bordered table-striped"][2]/tbody/tr')
                 print('multiple exam times detected')
                 process_items(process_items)
@@ -211,7 +216,7 @@ if __name__ == '__main__':
         try:
             next_time = datetime.now() + timedelta(seconds=interval)
             next_time_str = next_time.strftime(time_format)
-            
+            print('Start crawling...')
             earliest_vacancies = crawl_toefl_info()
         
             # format bot message and send
