@@ -33,3 +33,4 @@ class Bot:
         message = self.bot.send_message(chat_id=chat_id, text=message, disable_notification=not notification)
         self.logger.info('Sent message %s', message)
         return message
+    

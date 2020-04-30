@@ -234,7 +234,7 @@ if __name__ == '__main__':
 
             message = bot.send_message(s, config['telegram_chat_id'], notification)
             if notification: # ping latest version
-                bot.pin_chat_message(chat_id=config['telegram_chat_id'], message_id=message.message_id)
+                bot.bot.pin_chat_message(chat_id=config['telegram_chat_id'], message_id=message.message_id)
             bot.earliest_reply = s
             last_earliest = earliest_vacancies
         except:
