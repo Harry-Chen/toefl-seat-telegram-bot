@@ -57,14 +57,14 @@ def get_captcha():
     input_captcha.click()
     captcha_img = wait.until((EC.presence_of_element_located((By.ID, "chkImg"))))
     retry_count = 0
-    time.sleep(3)
+    time.sleep(5)
     captcha_url = "loading"
     while captcha_url is None or 'loading' in captcha_url:
         captcha_url = driver.find_element_by_id('chkImg').get_attribute("src")
         retry_count += 1
-        if retry_count == 5:
+        if retry_count == 10:
             raise Exception('Fetching captcha timeout')
-        time.sleep(0.5)
+        time.sleep(1)
     return captcha_url
 
 
@@ -209,11 +209,11 @@ if __name__ == '__main__':
 
     while True:
         try:
-            earliest_vacancies = crawl_toefl_info()
-            
             next_time = datetime.now() + timedelta(seconds=interval)
             next_time_str = next_time.strftime(time_format)
-
+            
+            earliest_vacancies = crawl_toefl_info()
+        
             # format bot message and send
             s = f'爬取时间：{datetime.now().strftime(time_format)}\n'
             s += '最早空余考位'
@@ -232,11 +232,11 @@ if __name__ == '__main__':
             s += f'fateadm 余额：{fateadm_api.QueryBalc().cust_val}\n'
             s += f'下次爬取时间：{next_time_str}'
 
+            bot.earliest_reply = s
+            last_earliest = earliest_vacancies
             message = bot.send_message(s, config['telegram_chat_id'], notification)
             if notification: # ping latest version
                 bot.bot.pin_chat_message(chat_id=config['telegram_chat_id'], message_id=message.message_id)
-            bot.earliest_reply = s
-            last_earliest = earliest_vacancies
         except:
             traceback.print_exc()
             s = f'Excecption occurred: {traceback.format_exc()})'
