@@ -31,13 +31,22 @@ config = json.load(open('config.json'))
 fateadm_api = FateadmApi(app_id=None, app_key=None, pd_id=config['fateadm_id'], pd_key=config['fateadm_key'])
 bot = Bot(config['telegram_token'])
 
+captcha_cache = {}
+refunded_captcha = {}
 
 def recognize_captcha(image_url):
+    # search cache
+    if image_url in captcha_cache:
+        print('Captcha in cache')
+        return captcha_cache[image_url]
+    
+    print('Using fateadm to recognize captcha')
     res = requests.get(image_url, headers={"User-Agent": USER_AGENT})
     captcha_result = fateadm_api.Predict("20400", res.content)
     if captcha_result.ret_code == 0:
         result = captcha_result.pred_rsp.value
         request_id = captcha_result.request_id
+        captcha_cache[image_url] = (request_id, result)
         return request_id, result
     else:
         raise Exception(f'Captcha API request failed: {captcha_result.ret_code} {captcha_result.err_msg}')
@@ -78,7 +87,8 @@ def fill_captcha_and_login(captcha):
     submit_button = wait.until(EC.presence_of_element_located((By.ID, 'btnLogin')))
     submit_button.click()
     try:
-        wait.until(EC.text_to_be_present_in_element((By.XPATH, '//div[@class="myhome_info_cn"]/span[2]'), '21073302'))
+        wait.until(EC.url_contains(config['neea_username']))
+        # wait.until(EC.text_to_be_present_in_element((By.XPATH, '//div[@class="myhome_info_cn"]/span[2]'), '21073302'))
         print('Login succeeded')
         return True
     except:
@@ -93,19 +103,22 @@ def crawl_toefl_info():
 
     retry_count = 0
     req_id = None
+    captcha_url = None
     captcha = None
 
     while captcha is None or not fill_captcha_and_login(captcha):
         # ask for refund for previous results
-        if req_id is not None:
+        if req_id is not None and captcha_url not in refunded_captcha:
             fateadm_api.Justice(req_id)
+            refunded_captcha[captcha_url] = True
+        # try again
         fill_credentials()
         captcha_url = get_captcha()
         print(f'Captcha URL: {captcha_url}')
         req_id, captcha = recognize_captcha(captcha_url)
         retry_count += 1
         if retry_count > 5:
-            raise Exception('Retry too many times, aborting...')
+            raise Exception('Retry to login for too many times, aborting...')
 
 
     seat_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, '考位查询')))
